@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mundos Minecraft (Windows)</title>
+  <style>
+    body{font:16px system-ui,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#fafafa;color:#111}
+    main{max-width:860px;margin:2rem auto;padding:0 1rem}
+    .card{background:#fff;border:1px solid #e5e5e5;border-radius:16px;padding:1.25rem;box-shadow:0 1px 10px rgba(0,0,0,.04)}
+    h1{margin:.25rem 0 0 0}
+    .muted{color:#555}
+    ul{list-style:none;padding:0;margin:1rem 0}
+    li{display:flex;gap:.75rem;align-items:center;justify-content:space-between;border-top:1px solid #e5e5e5;padding:.8rem 0}
+    li:first-child{border-top:0}
+    .btn{padding:.7rem 1rem;border-radius:12px;border:1px solid #ddd;text-decoration:none;color:inherit;background:#fff}
+    .grid{display:grid;grid-template-columns:1fr;gap:.6rem}
+    @media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+    .hint{background:#f6f6f6;border:1px dashed #ddd;border-radius:12px;padding:.8rem;margin-top:1rem}
+    .ok{display:none;color:#0a7a20;font-weight:600}
+    .warn{color:#a15c00}
+  </style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <h1>Mundos para Minecraft (Windows – Bedrock/Education)</h1>
+    <p class="muted">
+      Clique em <b>Baixar & Abrir</b>. O Windows associa <code>.mcworld</code> ao Minecraft e deve abrir o jogo para importar.
+      Em paralelo, tentamos abrir o app via <code>minecraft://</code> (se o navegador permitir).
+    </p>
+
+    <ul id="worlds"></ul>
+
+    <div class="hint">
+      <b>Status:</b> <span class="ok" id="stOk">tentando abrir o Minecraft…</span>
+      <span class="warn" id="stWait">se não abrir sozinho, clique no arquivo baixado no Edge/Chrome.</span>
+      <div class="muted" style="margin-top:.4rem">
+        Dica: verifique em <b>Configurações → Apps → Aplicativos padrão → Escolha padrões por tipo de arquivo</b> que <code>.mcworld</code>
+        está definido para <b>Minecraft</b> ou <b>Minecraft Education</b>.
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+/* 1) Seus mundos (.mcworld) */
+const WORLDS = [
+  {
+    name: "Caminhando com Dinossauros – v1 PTBR",
+    url: "https://github.com/juliocoutrim/mundos-minecraft/releases/download/V1/Caminhando.com.Dinossauros_Eras.Geologicas_Ciencias_Nivel_v1_PTBR.mcworld.mcworld"
+  },
+  {
+    name: "Fundamentos de Cibersegurança – v1 PTBR",
+    url: "https://github.com/juliocoutrim/mundos-minecraft/releases/download/V1/Fundamentos.de.Cyber.Seguranca_Seguranca.Digital_Educacao.Digital_Nivel_v1_PTBR.mcworld.mcworld"
+  },
+  {
+    name: "Missão IA Detetive Digital – v1 PTBR",
+    url: "https://github.com/juliocoutrim/mundos-minecraft/releases/download/V1/Missao.IA.Detetive.Digital_Inteligencia.Artificial_Educacao.Digital_Nivel_v1_PTBR.mcworld.mcworld"
+  }
+];
+
+/* 2) Lista na tela */
+const list = document.getElementById('worlds');
+list.innerHTML = WORLDS.map((w,i)=>`
+  <li>
+    <span style="font-weight:600">${w.name}</span>
+    <span class="grid">
+      <a class="btn dl" href="${w.url}" data-i="${i}">Baixar & Abrir (.mcworld)</a>
+      <a class="btn" href="minecraft://">Tentar abrir o Minecraft</a>
+    </span>
+  </li>
+`).join('');
+
+/* 3) UX: após iniciar o download, tentamos abrir o app (não quebra se o browser bloquear) */
+const stOk = document.getElementById('stOk');
+const stWait = document.getElementById('stWait');
+let timers = [];
+
+function tryOpenMinecraft() {
+  stOk.style.display = 'inline';
+  stWait.style.display = 'none';
+  const t1 = setTimeout(() => { safeOpen('minecraft://'); }, 1200);
+  const t2 = setTimeout(() => { safeOpen('minecraft://'); }, 5200);
+  timers.push(t1,t2);
+}
+function safeOpen(u){ try{ window.location.href = u; }catch(e){} }
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { timers.forEach(clearTimeout); timers = []; }
+});
+
+list.addEventListener('click', (ev) => {
+  const a = ev.target.closest('a.dl'); if (!a) return;
+  // Não impedir a navegação para o .mcworld (o SO/Edge/Chrome tratam a abertura)
+  setTimeout(tryOpenMinecraft, 50);
+});
+</script>
+</body>
+</html>
